@@ -1,0 +1,206 @@
+<head>
+<meta charset="UTF-8">
+<title>Pallet Scanner</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#2c7a7b">
+
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+font-family: Arial;
+background:#f4f4f4;
+margin:0;
+padding:0;
+}
+
+header{
+background:#2c7a7b;
+color:white;
+text-align:center;
+padding:15px;
+font-size:22px;
+}
+
+#reader{
+width:100%;
+max-width:500px;
+margin:auto;
+margin-top:10px;
+}
+
+#results{
+padding:15px;
+}
+
+#summary{
+font-size:20px;
+font-weight:bold;
+margin-bottom:10px;
+}
+
+button{
+background:#2c7a7b;
+color:white;
+border:none;
+padding:12px 20px;
+font-size:16px;
+border-radius:5px;
+margin-top:15px;
+}
+
+table{
+border-collapse:collapse;
+width:100%;
+background:white;
+}
+
+th,td{
+padding:10px;
+border:1px solid #ddd;
+font-size:14px;
+}
+
+th{
+background:#40916c;
+color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+Pallet Scanner
+</header>
+
+<div id="reader"></div>
+
+<div id="results" style="display:none;">
+
+<div id="summary"></div>
+
+<table id="table"></table>
+
+<center>
+<button onclick="scanAgain()">Scan Another Pallet</button>
+</center>
+
+</div>
+
+<script>
+
+let scanner;
+
+function parseQR(raw){
+
+let palletID = raw.split("|DATA:")[0].replace("PALLET_ID:","");
+let data = raw.split("|DATA:")[1];
+
+let items = data.split(";");
+
+let grouped = {};
+let totalTrays = 0;
+
+items.forEach(row=>{
+
+if(row.trim()=="") return;
+
+let fields = row.split("|");
+let obj = {};
+
+fields.forEach(f=>{
+
+let parts = f.split(":");
+obj[parts[0]] = parts.slice(1).join(":");
+
+});
+
+let sku = obj["SKU"];
+let name = obj["Name"];
+let prog = obj["Prog"];
+let trays = parseInt(obj["Trays"]) || 0;
+
+totalTrays += trays;
+
+if(!grouped[sku]){
+grouped[sku] = {
+name:name,
+prog:prog,
+trays:0
+};
+}
+
+grouped[sku].trays += trays;
+
+});
+
+document.getElementById("summary").innerText =
+"Pallet ID: " + palletID + "   |   Total Trays: " + totalTrays;
+
+let html = "<tr><th>SKU</th><th>Name</th><th>Program</th><th>Trays</th></tr>";
+
+let sorted = Object.keys(grouped).sort();
+
+sorted.forEach(sku=>{
+
+html += `<tr>
+<td>${sku}</td>
+<td>${grouped[sku].name}</td>
+<td>${grouped[sku].prog}</td>
+<td>${grouped[sku].trays}</td>
+</tr>`;
+
+});
+
+document.getElementById("table").innerHTML = html;
+
+document.getElementById("reader").style.display="none";
+document.getElementById("results").style.display="block";
+
+}
+
+function onScanSuccess(decodedText){
+
+scanner.clear();
+
+parseQR(decodedText);
+
+}
+
+function startScanner(){
+
+scanner = new Html5QrcodeScanner(
+"reader",
+{ fps:10, qrbox:300 }
+);
+
+scanner.render(onScanSuccess);
+
+}
+
+function scanAgain(){
+
+document.getElementById("results").style.display="none";
+document.getElementById("reader").style.display="block";
+
+startScanner();
+
+}
+
+startScanner();
+
+</script>
+
+</body>
+</html>
