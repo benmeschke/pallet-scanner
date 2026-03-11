@@ -10,7 +10,7 @@
 
 <link rel="apple-touch-icon" href="icon-192.png">
 
-<script src="https://unpkg.com/@zxing/browser@0.1.5"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -84,8 +84,8 @@ color:white;
 Pallet Scanner
 </header>
 
-<video id="reader" width="100%" height="auto"></video>
-
+<div id="reader"></div>
+  
 <div id="results" style="display:none;">
 
 <div id="summary"></div>
@@ -169,31 +169,28 @@ document.getElementById("reader").style.display="none";
 document.getElementById("results").style.display="block";
 
 }
+let scanner;
 
-let codeReader;
+function onScanSuccess(decodedText){
+
+scanner.clear();
+
+parseQR(decodedText);
+
+}
 
 function startScanner(){
 
-codeReader = new ZXingBrowser.BrowserQRCodeReader();
-
-codeReader.decodeFromVideoDevice(
-null,
-'reader',
-(result, err) => {
-
-if (result) {
-
-parseQR(result.text);
-
-codeReader.reset();
-
-document.getElementById("reader").style.display="none";
-document.getElementById("results").style.display="block";
-
-}
-
+scanner = new Html5QrcodeScanner(
+"reader",
+{
+fps: 10,
+qrbox: { width: 400, height: 400 },
+aspectRatio: 1.0
 }
 );
+
+scanner.render(onScanSuccess);
 
 }
 
@@ -208,10 +205,12 @@ startScanner();
 
 startScanner();
 
+
 </script>
 
 </body>
 </html>
+
 
 
 
