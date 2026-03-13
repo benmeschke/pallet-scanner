@@ -1,18 +1,14 @@
+<!DOCTYPE html>
+<html>
+
 <head>
+
 <meta charset="UTF-8">
 <title>Pallet Scanner</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#2c7a7b">
-
-<link rel="apple-touch-icon" href="icon-192.png">
-
 <script src="https://unpkg.com/html5-qrcode"></script>
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 
@@ -40,6 +36,7 @@ margin-top:10px;
 
 #results{
 padding:15px;
+display:none;
 }
 
 #summary{
@@ -76,6 +73,7 @@ color:white;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -86,7 +84,7 @@ Pallet Scanner
 
 <div id="reader"></div>
 
-<div id="results" style="display:none;">
+<div id="results">
 
 <div id="summary"></div>
 
@@ -104,61 +102,28 @@ let scanner;
 
 function parseQR(raw){
 
-let palletID = raw.split("|DATA:")[0].replace("PALLET_ID:","");
-let data = raw.split("|DATA:")[1];
+let palletID = raw.replace("PALLET_ID:","").trim();
 
-let items = data.split(";");
+fetch("http://192.168.0.250/pallet.php?id=" + palletID)
 
-let grouped = {};
-let totalTrays = 0;
+.then(res => res.json())
 
-items.forEach(row=>{
-
-if(row.trim()=="") return;
-
-let fields = row.split("|");
-let obj = {};
-
-fields.forEach(f=>{
-
-let parts = f.split(":");
-obj[parts[0]] = parts.slice(1).join(":");
-
-});
-
-let sku = obj["SKU"];
-let name = obj["Name"];
-let prog = obj["Prog"];
-let trays = parseInt(obj["Trays"]) || 0;
-
-totalTrays += trays;
-
-if(!grouped[sku]){
-grouped[sku] = {
-name:name,
-prog:prog,
-trays:0
-};
-}
-
-grouped[sku].trays += trays;
-
-});
+.then(data => {
 
 document.getElementById("summary").innerText =
-"Pallet ID: " + palletID + "   |   Total Trays: " + totalTrays;
+"Pallet ID: " + data.pallet_id +
+" | Total Trays: " + data.total_trays;
 
-let html = "<tr><th>SKU</th><th>Name</th><th>Program</th><th>Trays</th></tr>";
+let html = "<tr><th>SKU</th><th>Name</th><th>Program</th><th>Pkgs/Tray</th><th>Trays</th></tr>";
 
-let sorted = Object.keys(grouped).sort();
-
-sorted.forEach(sku=>{
+data.rows.forEach(row => {
 
 html += `<tr>
-<td>${sku}</td>
-<td>${grouped[sku].name}</td>
-<td>${grouped[sku].prog}</td>
-<td>${grouped[sku].trays}</td>
+<td>${row.SKU}</td>
+<td>${row.ProductName}</td>
+<td>${row.Program}</td>
+<td>${row.PackagesPerTray}</td>
+<td>${row.TrayCount}</td>
 </tr>`;
 
 });
@@ -167,6 +132,8 @@ document.getElementById("table").innerHTML = html;
 
 document.getElementById("reader").style.display="none";
 document.getElementById("results").style.display="block";
+
+});
 
 }
 
@@ -184,10 +151,9 @@ scanner = new Html5QrcodeScanner(
 "reader",
 {
 fps: 15,
-qrbox: { width: 350, height: 350 },
+qrbox: { width: 400, height: 400 },
 aspectRatio: 1.0,
-rememberLastUsedCamera: true,
-supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+rememberLastUsedCamera: true
 }
 );
 
@@ -209,4 +175,5 @@ startScanner();
 </script>
 
 </body>
+
 </html>
