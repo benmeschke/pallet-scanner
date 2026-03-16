@@ -105,15 +105,18 @@ function parseQR(raw){
 let palletID = raw.replace("PALLET_ID:","").trim();
 
 fetch("http://192.168.0.250/pallet.php?id=" + palletID)
-.then(res => res.json())
+.then(response => response.json())
 .then(data => {
 
+console.log("SERVER DATA:", data);
+
 document.getElementById("summary").innerText =
-"Pallet ID: " + data.pallet_id + " | Total Trays: " + data.total_trays;
+"Pallet ID: " + data.pallet_id +
+" | Total Trays: " + data.total_trays;
 
 let html = "<tr><th>SKU</th><th>Name</th><th>Program</th><th>Pkgs/Tray</th><th>Trays</th></tr>";
 
-data.rows.forEach(row => {
+data.rows.forEach(function(row){
 
 html += "<tr>" +
 "<td>" + row.SKU + "</td>" +
@@ -132,8 +135,8 @@ document.getElementById("results").style.display="block";
 
 })
 .catch(err => {
-alert("Error loading pallet data");
-console.log(err);
+console.log("FETCH ERROR:", err);
+alert("Could not load pallet data");
 });
 
 }
