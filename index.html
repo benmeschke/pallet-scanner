@@ -103,7 +103,8 @@ let scanner;
 function parseQR(raw){
 
 let palletID = raw.replace("PALLET_ID:","").trim();
-
+document.getElementById("reader").style.display="none";
+document.getElementById("results").style.display="block";
 fetch("http://192.168.0.250/pallet.php?id=" + palletID)
 .then(response => response.json())
 .then(data => {
