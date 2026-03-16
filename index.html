@@ -118,13 +118,13 @@ let html = "<tr><th>SKU</th><th>Name</th><th>Program</th><th>Pkgs/Tray</th><th>T
 
 data.rows.forEach(function(row){
 
-html += "<tr>" +
-"<td>" + row.SKU + "</td>" +
-"<td>" + row.ProductName + "</td>" +
-"<td>" + row.Program + "</td>" +
-"<td>" + row.PackagesPerTray + "</td>" +
-"<td>" + row.TrayCount + "</td>" +
-"</tr>";
+html += `<tr>
+<td>${row.SKU || ""}</td>
+<td>${row.ProductName || ""}</td>
+<td>${row.Program || ""}</td>
+<td>${row.PackagesPerTray || 0}</td>
+<td>${row.TrayCount || 0}</td>
+</tr>`;
 
 });
 
