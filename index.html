@@ -109,7 +109,7 @@ fetch("http://192.168.0.250/pallet.php?id=" + palletID)
 .then(response => response.json())
 .then(data => {
 
-console.log("SERVER DATA:", data);
+alert(JSON.stringify(data));
 
 document.getElementById("summary").innerText =
 "Pallet ID: " + data.pallet_id +
