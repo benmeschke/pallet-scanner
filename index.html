@@ -102,45 +102,54 @@ let scanner;
 
 function parseQR(raw){
 
-let palletID = raw.replace("PALLET_ID:","").trim();
-document.getElementById("reader").style.display="none";
-document.getElementById("results").style.display="block";
+// Extract the pallet UUID from the QR
+let palletID = raw.replace("PALLET:", "").trim();
+
+// Request pallet data from the server
 fetch("http://192.168.0.250/pallet.php?id=" + palletID)
 .then(response => response.json())
 .then(data => {
 
-alert(JSON.stringify(data));
-
+// Display pallet summary
 document.getElementById("summary").innerText =
 "Pallet ID: " + data.pallet_id +
 " | Total Trays: " + data.total_trays;
 
-let html = "<tr><th>SKU</th><th>Name</th><th>Program</th><th>Pkgs/Tray</th><th>Trays</th></tr>";
+// Build the table
+let html = "<tr>" +
+"<th>SKU</th>" +
+"<th>Name</th>" +
+"<th>Program</th>" +
+"<th>Pkgs/Tray</th>" +
+"<th>Trays</th>" +
+"</tr>";
 
 data.rows.forEach(function(row){
 
-html += `<tr>
-<td>${row.SKU || ""}</td>
-<td>${row.ProductName || ""}</td>
-<td>${row.Program || ""}</td>
-<td>${row.PackagesPerTray || 0}</td>
-<td>${row.TrayCount || 0}</td>
-</tr>`;
+html += "<tr>" +
+"<td>" + (row.SKU || "") + "</td>" +
+"<td>" + (row.ProductName || "") + "</td>" +
+"<td>" + (row.Program || "") + "</td>" +
+"<td>" + (row.PackagesPerTray || 0) + "</td>" +
+"<td>" + (row.TrayCount || 0) + "</td>" +
+"</tr>";
 
 });
 
+// Insert table
 document.getElementById("table").innerHTML = html;
 
-
+// Switch screen from scanner → results
+document.getElementById("reader").style.display = "none";
+document.getElementById("results").style.display = "block";
 
 })
 .catch(err => {
-console.log("FETCH ERROR:", err);
+console.log(err);
 alert("Could not load pallet data");
 });
 
 }
-
 function onScanSuccess(decodedText){
 
 scanner.clear();
