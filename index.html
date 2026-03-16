@@ -105,26 +105,23 @@ function parseQR(raw){
 let palletID = raw.replace("PALLET_ID:","").trim();
 
 fetch("http://192.168.0.250/pallet.php?id=" + palletID)
-
 .then(res => res.json())
-
 .then(data => {
 
 document.getElementById("summary").innerText =
-"Pallet ID: " + data.pallet_id +
-" | Total Trays: " + data.total_trays;
+"Pallet ID: " + data.pallet_id + " | Total Trays: " + data.total_trays;
 
 let html = "<tr><th>SKU</th><th>Name</th><th>Program</th><th>Pkgs/Tray</th><th>Trays</th></tr>";
 
 data.rows.forEach(row => {
 
-html += `<tr>
-<td>${row.SKU}</td>
-<td>${row.ProductName}</td>
-<td>${row.Program}</td>
-<td>${row.PackagesPerTray}</td>
-<td>${row.TrayCount}</td>
-</tr>`;
+html += "<tr>" +
+"<td>" + row.SKU + "</td>" +
+"<td>" + row.ProductName + "</td>" +
+"<td>" + row.Program + "</td>" +
+"<td>" + row.PackagesPerTray + "</td>" +
+"<td>" + row.TrayCount + "</td>" +
+"</tr>";
 
 });
 
@@ -133,6 +130,10 @@ document.getElementById("table").innerHTML = html;
 document.getElementById("reader").style.display="none";
 document.getElementById("results").style.display="block";
 
+})
+.catch(err => {
+alert("Error loading pallet data");
+console.log(err);
 });
 
 }
